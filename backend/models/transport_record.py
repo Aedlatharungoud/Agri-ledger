@@ -7,13 +7,13 @@ class TransportRecord(db.Model):
     __tablename__ = "transport_records"
 
     id = db.Column(
-        db.BigInteger,
+        db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
     harvest_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         nullable=False
     )
 

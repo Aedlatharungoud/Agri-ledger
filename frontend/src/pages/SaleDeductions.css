@@ -1,0 +1,436 @@
+.sale-deductions-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 42px 42px 70px;
+  color: #12304a;
+}
+
+.sale-deductions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  margin-bottom: 28px;
+}
+
+.page-eyebrow {
+  color: #6b8197;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.sale-deductions-header h1 {
+  margin: 0;
+  font-size: 42px;
+  line-height: 1.1;
+  color: #102f4c;
+}
+
+.sale-deductions-header p {
+  margin: 12px 0 0;
+  color: #536f89;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.primary-button,
+.secondary-button,
+.edit-button,
+.delete-button,
+.close-button {
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.primary-button {
+  background: #25815d;
+  color: white;
+  padding: 12px 19px;
+  border-radius: 7px;
+  font-weight: 700;
+}
+
+.primary-button:hover {
+  background: #1d6f50;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 129, 93, 0.18);
+}
+
+.primary-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.secondary-button {
+  background: white;
+  color: #173c5d;
+  padding: 11px 18px;
+  border: 1px solid #bccbd7;
+  border-radius: 7px;
+}
+
+.secondary-button:hover {
+  background: #f4f8fa;
+}
+
+.secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.alert {
+  padding: 15px 20px;
+  border-radius: 9px;
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+.success-alert {
+  background: #eaf8ef;
+  border: 1px solid #a9dfbb;
+  color: #087a3d;
+}
+
+.error-alert {
+  background: #fff1f1;
+  border: 1px solid #edb2b2;
+  color: #b42318;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.summary-card {
+  background: white;
+  border: 1px solid #dce5eb;
+  border-radius: 12px;
+  padding: 23px;
+  min-height: 115px;
+  box-shadow: 0 4px 15px rgba(23, 60, 93, 0.05);
+}
+
+.summary-card span {
+  display: block;
+  color: #678098;
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.summary-card strong {
+  display: block;
+  color: #123a59;
+  font-size: 28px;
+  margin-bottom: 7px;
+}
+
+.summary-card small {
+  color: #7890a3;
+  font-size: 13px;
+}
+
+.form-card,
+.table-card {
+  background: white;
+  border: 1px solid #dce5eb;
+  border-radius: 14px;
+  box-shadow: 0 5px 20px rgba(23, 60, 93, 0.05);
+  margin-bottom: 28px;
+}
+
+.form-card {
+  padding: 28px;
+}
+
+.form-card-header,
+.table-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.form-card-header {
+  margin-bottom: 25px;
+}
+
+.section-label {
+  display: block;
+  color: #6d879e;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 7px;
+}
+
+.form-card h2,
+.table-card h2 {
+  margin: 0;
+  color: #123554;
+  font-size: 25px;
+}
+
+.close-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f1f5f7;
+  color: #47657c;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.close-button:hover {
+  background: #e5ecef;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field-wide {
+  grid-column: 1 / -1;
+}
+
+.form-field label {
+  color: #173c5d;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.form-field label span {
+  color: #c0392b;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #bccbd7;
+  border-radius: 7px;
+  padding: 12px 13px;
+  font: inherit;
+  color: #173c5d;
+  background: white;
+  outline: none;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: #25815d;
+  box-shadow: 0 0 0 3px rgba(37, 129, 93, 0.1);
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.table-card {
+  overflow: hidden;
+}
+
+.table-card-header {
+  padding: 28px;
+  border-bottom: 1px solid #e1e8ed;
+}
+
+.table-card-header p {
+  margin: 7px 0 0;
+  color: #6a8195;
+}
+
+.table-total {
+  text-align: right;
+}
+
+.table-total span {
+  display: block;
+  color: #6a8195;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.table-total strong {
+  color: #13784d;
+  font-size: 24px;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrapper table {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: collapse;
+}
+
+.table-wrapper th {
+  background: #f5f8fa;
+  color: #173c5d;
+  font-size: 13px;
+  text-align: left;
+  padding: 15px 14px;
+  border-bottom: 1px solid #dce5eb;
+  white-space: nowrap;
+}
+
+.table-wrapper td {
+  padding: 16px 14px;
+  border-bottom: 1px solid #e8edf0;
+  color: #284964;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.table-wrapper tbody tr:hover {
+  background: #fbfdfd;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  background: #edf7f2;
+  color: #20734f;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.amount-value {
+  color: #13784d;
+  white-space: nowrap;
+}
+
+.row-actions {
+  display: flex;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.edit-button,
+.delete-button {
+  padding: 8px 11px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #bccbd7;
+  color: #244b67;
+  font-size: 13px;
+}
+
+.edit-button:hover {
+  background: #f1f7fb;
+}
+
+.delete-button {
+  color: #b42318;
+  border-color: #e5b8b8;
+}
+
+.delete-button:hover {
+  background: #fff3f3;
+}
+
+.empty-state {
+  padding: 70px 25px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 46px;
+  margin-bottom: 15px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px;
+  color: #163b59;
+  font-size: 24px;
+}
+
+.empty-state p {
+  margin: 0 auto 22px;
+  max-width: 560px;
+  color: #6b8296;
+  line-height: 1.6;
+}
+
+@media (max-width: 1000px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sale-deductions-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 700px) {
+  .sale-deductions-page {
+    padding: 25px 18px 50px;
+  }
+
+  .summary-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field-wide {
+    grid-column: auto;
+  }
+
+  .sale-deductions-header h1 {
+    font-size: 34px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions button {
+    flex: 1;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}

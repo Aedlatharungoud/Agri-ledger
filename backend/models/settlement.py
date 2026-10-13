@@ -7,18 +7,18 @@ class Settlement(db.Model):
     __tablename__ = "settlements"
 
     id = db.Column(
-        db.BigInteger,
+        db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
     farmer_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         nullable=False
     )
 
     crop_season_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         nullable=True
     )
 

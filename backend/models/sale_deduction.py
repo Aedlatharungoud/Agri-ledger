@@ -19,12 +19,12 @@ class SaleDeduction(db.Model):
 
     deduction_type = db.Column(
         db.String(255),
-        nullable=True
+        nullable=False
     )
 
     amount = db.Column(
         db.Numeric(38, 2),
-        nullable=True
+        nullable=False
     )
 
     notes = db.Column(

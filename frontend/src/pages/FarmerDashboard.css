@@ -1,0 +1,362 @@
+/* ==========================================================================
+   AgriLedger AI — Farmer Dashboard (Visual-First Experience)
+   ========================================================================== */
+
+.farmer-dashboard-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6, 24px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* --------------------------------------------------------------------------
+   Hero Welcome Banner
+   -------------------------------------------------------------------------- */
+.farmer-hero {
+  position: relative;
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  background-color: var(--color-primary-forest, #174D35);
+  box-shadow: 0 4px 20px rgba(23, 77, 53, 0.15);
+  min-height: 220px;
+  display: flex;
+  align-items: stretch;
+}
+
+.farmer-hero__image-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 55%;
+  background-size: cover;
+  background-position: center right;
+  opacity: 0.85;
+  transition: transform 0.6s ease;
+}
+
+.farmer-hero:hover .farmer-hero__image-bg {
+  transform: scale(1.02);
+}
+
+.farmer-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(23, 77, 53, 0.98) 0%,
+    rgba(23, 77, 53, 0.92) 45%,
+    rgba(23, 77, 53, 0.5) 75%,
+    rgba(23, 77, 53, 0.2) 100%
+  );
+}
+
+.farmer-hero__content {
+  position: relative;
+  z-index: 2;
+  padding: 36px 40px;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #FFFFFF;
+}
+
+.farmer-hero__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #D1E7DD;
+  margin-bottom: 12px;
+  width: fit-content;
+}
+
+.farmer-hero__title {
+  margin: 0 0 10px;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.farmer-hero__subtitle {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #D3E4DB;
+  font-weight: 400;
+}
+
+.farmer-hero__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.farmer-btn--white {
+  background-color: #FFFFFF !important;
+  color: #174D35 !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.farmer-btn--white:hover {
+  background-color: #F0FDF4 !important;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   Profile & Farm Identity Strip
+   -------------------------------------------------------------------------- */
+.farmer-profile-strip {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E8E4);
+  border-radius: var(--radius-lg, 12px);
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(24, 37, 30, 0.04);
+}
+
+.farmer-profile-strip__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.farmer-profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: #E8F3ED;
+  color: #174D35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  border: 2px solid #C6E2D5;
+  flex-shrink: 0;
+}
+
+.farmer-profile-info h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #18251E);
+}
+
+.farmer-profile-meta {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-text-muted, #768A7E);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.farmer-profile-strip__badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Visual Feature Cards Grid (8 Core Modules)
+   -------------------------------------------------------------------------- */
+.farmer-modules-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.farmer-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.farmer-section-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text-primary, #18251E);
+  letter-spacing: -0.01em;
+}
+
+.farmer-section-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted, #768A7E);
+}
+
+.farmer-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.farmer-feature-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E8E4);
+  border-radius: var(--radius-lg, 12px);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 180px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  box-shadow: 0 1px 3px rgba(24, 37, 30, 0.04);
+}
+
+.farmer-feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(23, 77, 53, 0.12);
+  border-color: var(--color-action-green, #2F855A);
+}
+
+.farmer-feature-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.farmer-feature-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.farmer-feature-card:hover .farmer-feature-icon-wrapper {
+  transform: scale(1.08);
+}
+
+.farmer-feature-card__body h4 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary, #18251E);
+}
+
+.farmer-feature-card__body p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted, #768A7E);
+}
+
+.farmer-feature-card__footer {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-action-green, #2F855A);
+  border-top: 1px solid #F1F5F2;
+  padding-top: 10px;
+}
+
+.farmer-feature-card:hover .farmer-feature-card__footer {
+  color: var(--color-primary-forest, #174D35);
+}
+
+/* --------------------------------------------------------------------------
+   Quick Status KPI Overview
+   -------------------------------------------------------------------------- */
+.farmer-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Recent Activity 2-Column Section
+   -------------------------------------------------------------------------- */
+.farmer-activity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.farmer-card-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--color-border, #E2E8E4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.farmer-card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary, #18251E);
+}
+
+.farmer-card-header span {
+  font-size: 12px;
+  color: var(--color-text-muted, #768A7E);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Layout Breakpoints
+   -------------------------------------------------------------------------- */
+@media (max-width: 1200px) {
+  .farmer-feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .farmer-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .farmer-activity-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .farmer-hero {
+    min-height: auto;
+  }
+  .farmer-hero__image-bg {
+    width: 100%;
+    opacity: 0.25;
+  }
+  .farmer-hero__overlay {
+    background: rgba(23, 77, 53, 0.92);
+  }
+  .farmer-hero__content {
+    padding: 24px 20px;
+  }
+  .farmer-hero__title {
+    font-size: 22px;
+  }
+  .farmer-feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .farmer-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}

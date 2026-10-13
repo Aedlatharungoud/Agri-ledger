@@ -1,0 +1,497 @@
+.yield-prediction-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f6f8f7;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.yield-page-header {
+  margin-bottom: 28px;
+}
+
+.yield-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.yield-page-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #e6f5ee;
+  font-size: 28px;
+}
+
+.yield-section-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #5b7f66;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.yield-page-header h1 {
+  margin: 0;
+  color: #163c2d;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.yield-page-header p {
+  margin: 6px 0 0;
+  color: #6b7c74;
+  font-size: 14px;
+}
+
+/* ============================================================
+   LAYOUT
+============================================================ */
+
+.yield-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(320px, 0.8fr)
+    minmax(420px, 1.2fr);
+  gap: 24px;
+  max-width: 1250px;
+}
+
+/* ============================================================
+   CARD
+============================================================ */
+
+.yield-card {
+  padding: 25px;
+  background: #ffffff;
+  border: 1px solid #e5ebe8;
+  border-radius: 18px;
+  box-shadow: 0 3px 12px rgba(20, 55, 40, 0.04);
+}
+
+.yield-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.yield-card-header h2 {
+  margin: 0;
+  color: #183f30;
+  font-size: 20px;
+}
+
+.yield-card-header p {
+  margin: 6px 0 0;
+  color: #7b8982;
+  font-size: 13px;
+}
+
+.yield-ai-badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #e5f4eb;
+  color: #176b50;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   FORM
+============================================================ */
+
+.yield-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.yield-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.yield-form-group label {
+  color: #42564c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.yield-form-group input,
+.yield-form-group select {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid #dce4df;
+  border-radius: 9px;
+  outline: none;
+  background: #ffffff;
+  color: #24372d;
+  font-size: 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.yield-form-group input:focus,
+.yield-form-group select:focus {
+  border-color: #2f7651;
+  box-shadow: 0 0 0 3px rgba(47, 118, 81, 0.1);
+}
+
+/* ============================================================
+   BUTTON
+============================================================ */
+
+.yield-predict-button {
+  width: 100%;
+  margin-top: 7px;
+  padding: 13px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #176b50;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
+}
+
+.yield-predict-button:hover {
+  background: #12563f;
+  box-shadow: 0 5px 14px rgba(23, 107, 80, 0.18);
+}
+
+.yield-predict-button:active {
+  transform: translateY(1px);
+}
+
+.yield-predict-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+
+.yield-result-card {
+  min-height: 520px;
+  display: flex;
+}
+
+.yield-empty-state {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.yield-empty-icon {
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  border-radius: 20px;
+  background: #edf5ef;
+  font-size: 34px;
+}
+
+.yield-empty-state h2 {
+  margin: 0 0 8px;
+  color: #183f30;
+  font-size: 21px;
+}
+
+.yield-empty-state p {
+  max-width: 420px;
+  margin: 0;
+  color: #7a8781;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* ============================================================
+   LOADING
+============================================================ */
+
+.yield-loading {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.yield-spinner {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 18px;
+  border: 4px solid #dcecdf;
+  border-top-color: #28603d;
+  border-radius: 50%;
+  animation: yield-spin 0.8s linear infinite;
+}
+
+@keyframes yield-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.yield-loading h2 {
+  margin: 0 0 7px;
+  color: #183f30;
+  font-size: 20px;
+}
+
+.yield-loading p {
+  margin: 0;
+  color: #7a8781;
+  font-size: 13px;
+}
+
+/* ============================================================
+   ERROR
+============================================================ */
+
+.yield-error {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.yield-error-icon {
+  margin-bottom: 14px;
+  font-size: 44px;
+}
+
+.yield-error h2 {
+  margin: 0 0 8px;
+  color: #183f30;
+  font-size: 20px;
+}
+
+.yield-error p {
+  max-width: 430px;
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   RESULT
+============================================================ */
+
+.yield-result {
+  width: 100%;
+}
+
+.yield-result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.yield-result-header span {
+  color: #718078;
+  font-size: 12px;
+}
+
+.yield-result-header h2 {
+  margin: 5px 0 0;
+  color: #183f30;
+  font-size: 22px;
+}
+
+.yield-confidence {
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: #f4f0e6;
+  color: #806b2c;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   MAIN RESULT
+============================================================ */
+
+.yield-main-result {
+  padding: 25px;
+  margin-bottom: 15px;
+  border-radius: 15px;
+  background: #eef8f2;
+  text-align: center;
+}
+
+.yield-main-result span {
+  display: block;
+  margin-bottom: 8px;
+  color: #5c7166;
+  font-size: 12px;
+}
+
+.yield-main-result strong {
+  display: block;
+  color: #176b50;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.yield-main-result small {
+  color: #6e8177;
+  font-size: 12px;
+}
+
+/* ============================================================
+   TOTAL RESULT
+============================================================ */
+
+.yield-total-result {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.yield-total-result > div {
+  padding: 16px;
+  border: 1px solid #e7ecea;
+  border-radius: 11px;
+  background: #fafcfb;
+}
+
+.yield-total-result span {
+  display: block;
+  margin-bottom: 7px;
+  color: #738079;
+  font-size: 11px;
+}
+
+.yield-total-result strong {
+  color: #204d3b;
+  font-size: 18px;
+}
+
+/* ============================================================
+   DETAILS
+============================================================ */
+
+.yield-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.yield-details > div {
+  padding: 13px;
+  border-bottom: 1px solid #edf0ee;
+}
+
+.yield-details span {
+  display: block;
+  margin-bottom: 5px;
+  color: #7b8781;
+  font-size: 11px;
+}
+
+.yield-details strong {
+  color: #294c3c;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+/* ============================================================
+   INFORMATION
+============================================================ */
+
+.yield-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #f5f7f4;
+}
+
+.yield-info span {
+  font-size: 16px;
+}
+
+.yield-info p {
+  margin: 0;
+  color: #65736c;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 900px) {
+  .yield-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .yield-result-card {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 600px) {
+  .yield-prediction-page {
+    padding: 18px;
+  }
+
+  .yield-title-row {
+    align-items: flex-start;
+  }
+
+  .yield-page-header h1 {
+    font-size: 24px;
+  }
+
+  .yield-card {
+    padding: 18px;
+  }
+
+  .yield-total-result,
+  .yield-details {
+    grid-template-columns: 1fr;
+  }
+
+  .yield-main-result strong {
+    font-size: 31px;
+  }
+
+  .yield-result-header {
+    gap: 12px;
+  }
+}

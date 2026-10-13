@@ -1,0 +1,607 @@
+.market-price-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f6f8f7;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.market-price-page-header {
+  margin-bottom: 28px;
+}
+
+.market-price-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.market-price-page-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #e6f5ee;
+  font-size: 28px;
+}
+
+.market-price-section-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #5b7f66;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.market-price-page-header h1 {
+  margin: 0;
+  color: #163c2d;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.market-price-page-header p {
+  margin: 6px 0 0;
+  color: #6b7c74;
+  font-size: 14px;
+}
+
+/* ============================================================
+   LAYOUT
+============================================================ */
+
+.market-price-layout {
+  display: grid;
+  grid-template-columns:
+    minmax(320px, 0.8fr)
+    minmax(420px, 1.2fr);
+
+  gap: 24px;
+
+  max-width: 1250px;
+}
+
+/* ============================================================
+   CARD
+============================================================ */
+
+.market-price-card {
+  background: white;
+  border: 1px solid #e5ebe8;
+  border-radius: 18px;
+  padding: 25px;
+
+  box-shadow:
+    0 3px 12px
+    rgba(20, 55, 40, 0.04);
+}
+
+.market-price-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.market-price-card-header h2 {
+  margin: 0;
+  color: #183f30;
+  font-size: 20px;
+}
+
+.market-price-card-header p {
+  margin: 6px 0 0;
+  color: #7b8982;
+  font-size: 13px;
+}
+
+.market-price-ai-badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #e5f4eb;
+  color: #176b50;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   FORM
+============================================================ */
+
+.market-price-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.market-price-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.market-price-form-group label {
+  color: #42564c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.market-price-form-group input,
+.market-price-form-group select {
+  width: 100%;
+  padding: 12px 13px;
+
+  border: 1px solid #dce4df;
+  border-radius: 9px;
+
+  outline: none;
+
+  background: white;
+  color: #24372d;
+
+  font-size: 14px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.market-price-form-group input:focus,
+.market-price-form-group select:focus {
+  border-color: #2f7651;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(47, 118, 81, 0.1);
+}
+
+/* ============================================================
+   BUTTON
+============================================================ */
+
+.market-price-predict-button {
+  width: 100%;
+  margin-top: 7px;
+
+  padding: 13px 18px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #176b50;
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
+}
+
+.market-price-predict-button:hover {
+  background: #12563f;
+}
+
+.market-price-predict-button:active {
+  transform: translateY(1px);
+}
+
+.market-price-predict-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   RESULT CARD
+============================================================ */
+
+.market-price-result-card {
+  min-height: 520px;
+  display: flex;
+}
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+
+.market-price-empty-state {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.market-price-empty-icon {
+  width: 70px;
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 18px;
+
+  border-radius: 20px;
+
+  background: #edf5ef;
+
+  font-size: 34px;
+}
+
+.market-price-empty-state h2 {
+  margin: 0 0 8px;
+
+  color: #183f30;
+
+  font-size: 21px;
+}
+
+.market-price-empty-state p {
+  max-width: 420px;
+
+  margin: 0;
+
+  color: #7a8781;
+
+  font-size: 13px;
+
+  line-height: 1.7;
+}
+
+/* ============================================================
+   LOADING
+============================================================ */
+
+.market-price-loading {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.market-price-spinner {
+  width: 42px;
+  height: 42px;
+
+  margin-bottom: 18px;
+
+  border: 4px solid #dcecdf;
+
+  border-top-color: #28603d;
+
+  border-radius: 50%;
+
+  animation:
+    market-price-spin 0.8s linear infinite;
+}
+
+@keyframes market-price-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.market-price-loading h2 {
+  margin: 0 0 7px;
+
+  color: #183f30;
+
+  font-size: 20px;
+}
+
+.market-price-loading p {
+  margin: 0;
+
+  color: #7a8781;
+
+  font-size: 13px;
+}
+
+/* ============================================================
+   ERROR
+============================================================ */
+
+.market-price-error {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.market-price-error-icon {
+  font-size: 44px;
+  margin-bottom: 14px;
+}
+
+.market-price-error h2 {
+  margin: 0 0 8px;
+
+  color: #183f30;
+
+  font-size: 20px;
+}
+
+.market-price-error p {
+  max-width: 430px;
+
+  margin: 0;
+
+  color: #b42318;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+/* ============================================================
+   RESULT
+============================================================ */
+
+.market-price-result {
+  width: 100%;
+}
+
+.market-price-result-header {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 22px;
+}
+
+.market-price-result-header span {
+  color: #718078;
+  font-size: 12px;
+}
+
+.market-price-result-header h2 {
+  margin: 5px 0 3px;
+
+  color: #183f30;
+
+  font-size: 22px;
+}
+
+.market-price-result-header small {
+  color: #7b8982;
+  font-size: 12px;
+}
+
+.market-price-confidence {
+  padding: 7px 12px;
+
+  border-radius: 20px;
+
+  background: #f4f0e6;
+
+  color: #806b2c;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+/* ============================================================
+   MAIN PRICE
+============================================================ */
+
+.market-price-main-result {
+  padding: 25px;
+
+  margin-bottom: 15px;
+
+  border-radius: 15px;
+
+  background: #eef8f2;
+
+  text-align: center;
+}
+
+.market-price-main-result span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #5c7166;
+
+  font-size: 12px;
+}
+
+.market-price-main-result strong {
+  display: block;
+
+  color: #176b50;
+
+  font-size: 38px;
+
+  font-weight: 700;
+}
+
+.market-price-main-result small {
+  color: #6e8177;
+
+  font-size: 12px;
+}
+
+/* ============================================================
+   HISTORICAL RANGE
+============================================================ */
+
+.market-price-range {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 12px;
+
+  margin-bottom: 15px;
+}
+
+.market-price-range > div {
+  padding: 16px;
+
+  border: 1px solid #e7ecea;
+
+  border-radius: 11px;
+
+  background: #fafcfb;
+}
+
+.market-price-range span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #738079;
+
+  font-size: 11px;
+}
+
+.market-price-range strong {
+  color: #204d3b;
+
+  font-size: 17px;
+}
+
+/* ============================================================
+   DETAILS
+============================================================ */
+
+.market-price-details {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 10px;
+
+  margin-bottom: 18px;
+}
+
+.market-price-details > div {
+  padding: 13px;
+
+  border-bottom:
+    1px solid #edf0ee;
+}
+
+.market-price-details span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #7b8781;
+
+  font-size: 11px;
+}
+
+.market-price-details strong {
+  color: #294c3c;
+
+  font-size: 13px;
+
+  text-transform: capitalize;
+}
+
+/* ============================================================
+   INFORMATION
+============================================================ */
+
+.market-price-info {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 10px;
+
+  padding: 14px;
+
+  border-radius: 10px;
+
+  background: #f5f7f4;
+}
+
+.market-price-info span {
+  font-size: 16px;
+}
+
+.market-price-info p {
+  margin: 0;
+
+  color: #65736c;
+
+  font-size: 11px;
+
+  line-height: 1.6;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 900px) {
+
+  .market-price-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .market-price-result-card {
+    min-height: 400px;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .market-price-page {
+    padding: 18px;
+  }
+
+  .market-price-title-row {
+    align-items: flex-start;
+  }
+
+  .market-price-page-header h1 {
+    font-size: 24px;
+  }
+
+  .market-price-card {
+    padding: 18px;
+  }
+
+  .market-price-range,
+  .market-price-details {
+    grid-template-columns: 1fr;
+  }
+
+  .market-price-main-result strong {
+    font-size: 31px;
+  }
+
+}

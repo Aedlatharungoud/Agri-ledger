@@ -44,5 +44,18 @@ Thumbs.db
 *.bak
 *.tmp
 
-# Local SQLite database
+# ============================================================
+# Local database and scratch files
+# ============================================================
+
 backend/instance/*.db
+database/*.db
+database/agriledger.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Scratch analysis scripts & local artifacts
+scratch/
+logs/
+

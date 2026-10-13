@@ -1,13 +1,252 @@
+
+from datetime import datetime
+import math
+
 from flask import Blueprint, request, jsonify
+
 from backend.extensions import db
 from backend.models.market_sale import MarketSale
-from datetime import datetime
+from backend.models.harvest import Harvest
+from backend.auth_utils import get_current_user
 
 
-market_sale_bp = Blueprint(
-    "market_sale_bp",
-    __name__
-)
+market_sale_bp = Blueprint("market_sale_bp", __name__)
+
+
+# ============================================================
+# AUTHORIZATION
+# ============================================================
+
+def require_user():
+    user = get_current_user()
+
+    if user is None:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "Authentication required."
+            }),
+            401
+        )
+
+    if user.role not in ("ADMIN", "FARMER"):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "You do not have permission to access this resource."
+            }),
+            403
+        )
+
+    if user.role == "FARMER" and not user.farmer_id:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "Farmer account is not linked to a farmer record."
+            }),
+            403
+        )
+
+    return user, None
+
+
+def can_manage_farmer(user, farmer_id):
+    if user.role == "ADMIN":
+        return True
+
+    try:
+        return (
+            user.role == "FARMER"
+            and user.farmer_id is not None
+            and int(user.farmer_id) == int(farmer_id)
+        )
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+# ============================================================
+# VALIDATION HELPERS
+# ============================================================
+
+def parse_positive_id(value, field_name):
+    if isinstance(value, bool):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": f"{field_name} must be a positive integer."
+            }),
+            400
+        )
+
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError, OverflowError):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": f"{field_name} must be a positive integer."
+            }),
+            400
+        )
+
+    if parsed <= 0 or str(value).strip() != str(parsed):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": f"{field_name} must be a positive integer."
+            }),
+            400
+        )
+
+    return parsed, None
+
+
+def parse_nonnegative_number(value, field_name):
+    if isinstance(value, bool):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": f"{field_name} must be a valid non-negative number."
+            }),
+            400
+        )
+
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": f"{field_name} must be a valid non-negative number."
+            }),
+            400
+        )
+
+    if not math.isfinite(number) or number < 0:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": f"{field_name} must be a finite non-negative number."
+            }),
+            400
+        )
+
+    return number, None
+
+
+def parse_sale_date(value):
+    if not isinstance(value, str) or not value.strip():
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "saleDate must use YYYY-MM-DD format."
+            }),
+            400
+        )
+
+    try:
+        return datetime.strptime(value.strip(), "%Y-%m-%d").date(), None
+    except ValueError:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "saleDate must use YYYY-MM-DD format."
+            }),
+            400
+        )
+
+
+ALLOWED_UNITS = ("BAG", "KG", "QUINTAL", "TON")
+
+
+def parse_sale_unit(value):
+    """
+    Validate and normalize the sale unit.
+    Must be a non-empty string matching one of the supported units: BAG, KG, QUINTAL, TON.
+    Reject missing, unsupported, malformed, or inconsistent unit values.
+    """
+    if value is None or isinstance(value, bool):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "Sale unit is required and must be one of: BAG, KG, QUINTAL, TON."
+            }),
+            400
+        )
+
+    if not isinstance(value, str):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "Sale unit must be text."
+            }),
+            400
+        )
+
+    cleaned = value.strip().upper()
+    if not cleaned:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "Sale unit cannot be empty."
+            }),
+            400
+        )
+
+    if cleaned not in ALLOWED_UNITS:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": f"Unsupported sale unit '{value.strip()}'. Allowed units: {', '.join(ALLOWED_UNITS)}."
+            }),
+            400
+        )
+
+    return cleaned, None
+
+
+def validate_text(value, field_name):
+    if value is None:
+        return None, None
+
+    if not isinstance(value, str):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": f"{field_name} must be text or null."
+            }),
+            400
+        )
+
+    return value.strip() or None, None
+
+
+def validate_harvest(farmer_id, harvest_id):
+    harvest_id, error = parse_positive_id(harvest_id, "harvestId")
+    if error:
+        return None, error
+
+    harvest = db.session.get(Harvest, harvest_id)
+
+    if harvest is None:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "Harvest not found."
+            }),
+            404
+        )
+
+    if int(harvest.farmer_id) != int(farmer_id):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "The selected harvest does not belong to this farmer."
+            }),
+            403
+        )
+
+    return harvest, None
 
 
 # ============================================================
@@ -15,63 +254,53 @@ market_sale_bp = Blueprint(
 # ============================================================
 
 def market_sale_to_dict(sale):
+    raw_unit = sale.unit
+    cleaned_unit = raw_unit.strip().upper() if isinstance(raw_unit, str) else None
+    unit_needs_review = cleaned_unit not in ALLOWED_UNITS
+
     return {
         "id": sale.id,
         "farmerId": sale.farmer_id,
         "harvestId": sale.harvest_id,
-
         "saleDate": (
             sale.sale_date.isoformat()
-            if sale.sale_date
-            else None
+            if hasattr(getattr(sale, "sale_date", None), "isoformat")
+            and not isinstance(getattr(sale, "sale_date", None), str)
+            else (str(sale.sale_date) if getattr(sale, "sale_date", None) else None)
         ),
-
-        "marketName": sale.market_name,
-        "buyerName": sale.buyer_name,
-
+        "marketName": sale.market_name if isinstance(sale.market_name, str) else None,
+        "buyerName": sale.buyer_name if isinstance(sale.buyer_name, str) else None,
         "quantitySold": (
             float(sale.quantity_sold)
-            if sale.quantity_sold is not None
-            else None
+            if sale.quantity_sold is not None else None
         ),
-
-        "unit": sale.unit,
-
+        "unit": sale.unit if isinstance(sale.unit, str) else None,
+        "unitNeedsReview": unit_needs_review,
         "ratePerUnit": (
             float(sale.rate_per_unit)
-            if sale.rate_per_unit is not None
-            else None
+            if sale.rate_per_unit is not None else None
         ),
-
         "grossAmount": (
             float(sale.gross_amount)
-            if sale.gross_amount is not None
-            else None
+            if sale.gross_amount is not None else None
         ),
-
         "commission": (
             float(sale.commission)
-            if sale.commission is not None
-            else None
+            if sale.commission is not None else None
         ),
-
         "marketFee": (
             float(sale.market_fee)
-            if sale.market_fee is not None
-            else None
+            if sale.market_fee is not None else None
         ),
-
         "otherDeduction": (
             float(sale.other_deduction)
-            if sale.other_deduction is not None
-            else None
+            if sale.other_deduction is not None else None
         ),
-
-        "notes": sale.notes,
-
+        "notes": sale.notes if isinstance(sale.notes, str) else None,
         "createdAt": (
             sale.created_at.isoformat()
-            if sale.created_at
+            if hasattr(getattr(sale, "created_at", None), "isoformat")
+            and not isinstance(getattr(sale, "created_at", None), str)
             else None
         )
     }
@@ -79,96 +308,188 @@ def market_sale_to_dict(sale):
 
 # ============================================================
 # GET ALL MARKET SALES
+# ADMIN: ALL
+# FARMER: OWN SALES ONLY
 # ============================================================
 
-@market_sale_bp.route(
-    "/api/market-sales",
-    methods=["GET"]
-)
+@market_sale_bp.route("/api/market-sales", methods=["GET"])
 def get_market_sales():
+    user, error = require_user()
+    if error:
+        return error
 
-    sales = MarketSale.query.all()
+    try:
+        query = MarketSale.query
 
-    return jsonify([
-        market_sale_to_dict(sale)
-        for sale in sales
-    ])
+        if user.role == "FARMER":
+            query = query.filter_by(farmer_id=user.farmer_id)
+
+        sales = query.order_by(MarketSale.id.desc()).all()
+
+        return jsonify([
+            market_sale_to_dict(sale)
+            for sale in sales
+        ]), 200
+
+    except Exception:
+        return jsonify({
+            "status": "error",
+            "message": "Unable to retrieve market sales."
+        }), 500
 
 
 # ============================================================
 # GET MARKET SALE BY ID
 # ============================================================
 
-@market_sale_bp.route(
-    "/api/market-sales/<int:id>",
-    methods=["GET"]
-)
+@market_sale_bp.route("/api/market-sales/<int:id>", methods=["GET"])
 def get_market_sale(id):
+    user, error = require_user()
+    if error:
+        return error
 
-    sale = MarketSale.query.get(id)
+    try:
+        sale = db.session.get(MarketSale, id)
 
-    if not sale:
+        if sale is None:
+            return jsonify({
+                "status": "error",
+                "message": "Market sale not found."
+            }), 404
+
+        if not can_manage_farmer(user, sale.farmer_id):
+            return jsonify({
+                "status": "error",
+                "message": "You are not authorized to access this sale."
+            }), 403
+
+        return jsonify(market_sale_to_dict(sale)), 200
+
+    except Exception:
         return jsonify({
-            "error": "Market sale not found"
-        }), 404
-
-    return jsonify(
-        market_sale_to_dict(sale)
-    )
+            "status": "error",
+            "message": "Unable to retrieve the market sale."
+        }), 500
 
 
 # ============================================================
 # CREATE MARKET SALE
 # ============================================================
 
-@market_sale_bp.route(
-    "/api/market-sales",
-    methods=["POST"]
-)
+@market_sale_bp.route("/api/market-sales", methods=["POST"])
 def create_market_sale():
+    user, error = require_user()
+    if error:
+        return error
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
 
-    if not data:
+    if not isinstance(data, dict):
         return jsonify({
-            "error": "Request body is required"
+            "status": "error",
+            "message": "A valid JSON request body is required."
         }), 400
 
-    required_fields = [
-        "farmerId",
-        "harvestId",
-        "saleDate"
+    if user.role == "FARMER":
+        data["farmerId"] = user.farmer_id
+
+    required = ["farmerId", "harvestId", "saleDate", "unit"]
+
+    missing = [
+        key for key in required
+        if key not in data or data[key] is None or str(data[key]).strip() == ""
     ]
 
-    for field_name in required_fields:
+    if missing:
+        return jsonify({
+            "status": "error",
+            "message": "Missing required field(s): " + ", ".join(missing)
+        }), 400
 
-        if field_name not in data:
-            return jsonify({
-                "error": f"{field_name} is required"
-            }), 400
+    farmer_id, error = parse_positive_id(data["farmerId"], "farmerId")
+    if error:
+        return error
+
+    if not can_manage_farmer(user, farmer_id):
+        return jsonify({
+            "status": "error",
+            "message": "You can create sales only for your own farmer account."
+        }), 403
+
+    sale_date, error = parse_sale_date(data["saleDate"])
+    if error:
+        return error
+
+    sale_unit, error = parse_sale_unit(data.get("unit"))
+    if error:
+        return error
+
+    quantity = data.get("quantitySold")
+    rate = data.get("ratePerUnit")
+
+    if quantity is None or quantity == "":
+        return jsonify({
+            "status": "error",
+            "message": "quantitySold is required."
+        }), 400
+
+    if rate is None or rate == "":
+        return jsonify({
+            "status": "error",
+            "message": "ratePerUnit is required."
+        }), 400
+
+    quantity, error = parse_nonnegative_number(quantity, "quantitySold")
+    if error:
+        return error
+
+    if quantity <= 0:
+        return jsonify({
+            "status": "error",
+            "message": "quantitySold must be greater than zero."
+        }), 400
+
+    rate, error = parse_nonnegative_number(rate, "ratePerUnit")
+    if error:
+        return error
+
+    # Rate is strictly interpreted per selected sale unit (BAG, KG, etc.)
+    # Gross amount is calculated directly without any unit conversion
+    gross_amount = round(quantity * rate, 2)
+
+    money_fields = {}
+    for key in ("commission", "marketFee", "otherDeduction"):
+        value, error = parse_nonnegative_number(data.get(key, 0), key)
+        if error:
+            return error
+        money_fields[key] = value
+
+    text_fields = {}
+    for key in ("marketName", "buyerName", "notes"):
+        value, error = validate_text(data.get(key), key)
+        if error:
+            return error
+        text_fields[key] = value
 
     try:
-
-        sale_date = datetime.strptime(
-            data["saleDate"],
-            "%Y-%m-%d"
-        ).date()
+        harvest, error = validate_harvest(farmer_id, data["harvestId"])
+        if error:
+            return error
 
         sale = MarketSale(
-            farmer_id=data["farmerId"],
-            harvest_id=data["harvestId"],
+            farmer_id=farmer_id,
+            harvest_id=harvest.id,
             sale_date=sale_date,
-
-            market_name=data.get("marketName"),
-            buyer_name=data.get("buyerName"),
-            quantity_sold=data.get("quantitySold"),
-            unit=data.get("unit"),
-            rate_per_unit=data.get("ratePerUnit"),
-            gross_amount=data.get("grossAmount"),
-            commission=data.get("commission"),
-            market_fee=data.get("marketFee"),
-            other_deduction=data.get("otherDeduction"),
-            notes=data.get("notes")
+            market_name=text_fields["marketName"],
+            buyer_name=text_fields["buyerName"],
+            quantity_sold=quantity,
+            unit=sale_unit,
+            rate_per_unit=rate,
+            gross_amount=gross_amount,
+            commission=money_fields["commission"],
+            market_fee=money_fields["marketFee"],
+            other_deduction=money_fields["otherDeduction"],
+            notes=text_fields["notes"]
         )
 
         db.session.add(sale)
@@ -179,18 +500,11 @@ def create_market_sale():
             "marketSale": market_sale_to_dict(sale)
         }), 201
 
-    except ValueError:
-
-        return jsonify({
-            "error": "saleDate must use YYYY-MM-DD format"
-        }), 400
-
-    except Exception as e:
-
+    except Exception:
         db.session.rollback()
-
         return jsonify({
-            "error": str(e)
+            "status": "error",
+            "message": "Unable to create market sale. Check the supplied data."
         }), 500
 
 
@@ -198,90 +512,160 @@ def create_market_sale():
 # UPDATE MARKET SALE
 # ============================================================
 
-@market_sale_bp.route(
-    "/api/market-sales/<int:id>",
-    methods=["PUT"]
-)
+@market_sale_bp.route("/api/market-sales/<int:id>", methods=["PUT"])
 def update_market_sale(id):
+    user, error = require_user()
+    if error:
+        return error
 
-    sale = MarketSale.query.get(id)
+    data = request.get_json(silent=True)
 
-    if not sale:
+    if not isinstance(data, dict) or not data:
         return jsonify({
-            "error": "Market sale not found"
-        }), 404
+            "status": "error",
+            "message": "A non-empty JSON request body is required."
+        }), 400
 
-    data = request.get_json()
+    allowed = {
+        "farmerId", "harvestId", "saleDate", "marketName", "buyerName",
+        "quantitySold", "unit", "ratePerUnit", "grossAmount",
+        "commission", "marketFee", "otherDeduction", "notes"
+    }
 
-    if not data:
+    unknown = set(data.keys()) - allowed
+    if unknown:
         return jsonify({
-            "error": "Request body is required"
+            "status": "error",
+            "message": "Unsupported field(s): " + ", ".join(sorted(unknown))
         }), 400
 
     try:
+        sale = db.session.get(MarketSale, id)
+
+        if sale is None:
+            return jsonify({
+                "status": "error",
+                "message": "Market sale not found."
+            }), 404
+
+        if not can_manage_farmer(user, sale.farmer_id):
+            return jsonify({
+                "status": "error",
+                "message": "You are not authorized to update this sale."
+            }), 403
+
+        target_farmer_id = sale.farmer_id
 
         if "farmerId" in data:
-            sale.farmer_id = data["farmerId"]
+            target_farmer_id, error = parse_positive_id(
+                data["farmerId"], "farmerId"
+            )
+            if error:
+                return error
 
-        if "harvestId" in data:
-            sale.harvest_id = data["harvestId"]
+            if user.role != "ADMIN" and target_farmer_id != user.farmer_id:
+                return jsonify({
+                    "status": "error",
+                    "message": "Farmers cannot transfer sales to another farmer."
+                }), 403
 
+        target_harvest_id = data.get("harvestId", sale.harvest_id)
+        harvest, error = validate_harvest(
+            target_farmer_id, target_harvest_id
+        )
+        if error:
+            return error
+
+        target_date = sale.sale_date
         if "saleDate" in data:
+            target_date, error = parse_sale_date(data["saleDate"])
+            if error:
+                return error
 
-            sale.sale_date = datetime.strptime(
-                data["saleDate"],
-                "%Y-%m-%d"
-            ).date()
-
-        if "marketName" in data:
-            sale.market_name = data["marketName"]
-
-        if "buyerName" in data:
-            sale.buyer_name = data["buyerName"]
-
-        if "quantitySold" in data:
-            sale.quantity_sold = data["quantitySold"]
-
+        target_unit = sale.unit
         if "unit" in data:
-            sale.unit = data["unit"]
+            target_unit, error = parse_sale_unit(data["unit"])
+            if error:
+                return error
 
+        target_quantity = float(sale.quantity_sold) if sale.quantity_sold is not None else 0.0
+        if "quantitySold" in data:
+            target_quantity, error = parse_nonnegative_number(
+                data["quantitySold"], "quantitySold"
+            )
+            if error:
+                return error
+            if target_quantity <= 0:
+                return jsonify({
+                    "status": "error",
+                    "message": "quantitySold must be greater than zero."
+                }), 400
+
+        target_rate = float(sale.rate_per_unit) if sale.rate_per_unit is not None else 0.0
         if "ratePerUnit" in data:
-            sale.rate_per_unit = data["ratePerUnit"]
+            target_rate, error = parse_nonnegative_number(
+                data["ratePerUnit"], "ratePerUnit"
+            )
+            if error:
+                return error
 
-        if "grossAmount" in data:
-            sale.gross_amount = data["grossAmount"]
+        # Rate is strictly interpreted per target sale unit without conversion
+        target_gross = round(target_quantity * target_rate, 2)
 
-        if "commission" in data:
-            sale.commission = data["commission"]
+        target_money = {}
+        for key, attribute in (
+            ("commission", "commission"),
+            ("marketFee", "market_fee"),
+            ("otherDeduction", "other_deduction")
+        ):
+            current = getattr(sale, attribute) or 0
+            value, error = parse_nonnegative_number(
+                data.get(key, current), key
+            )
+            if error:
+                return error
+            target_money[key] = value
 
-        if "marketFee" in data:
-            sale.market_fee = data["marketFee"]
+        target_text = {}
+        for key, attribute in (
+            ("marketName", "market_name"),
+            ("buyerName", "buyer_name"),
+            ("notes", "notes")
+        ):
+            value, error = validate_text(
+                data[key] if key in data else getattr(sale, attribute),
+                key
+            )
+            if error:
+                return error
+            target_text[key] = value
 
-        if "otherDeduction" in data:
-            sale.other_deduction = data["otherDeduction"]
-
-        if "notes" in data:
-            sale.notes = data["notes"]
+        sale.farmer_id = target_farmer_id
+        sale.harvest_id = harvest.id
+        sale.sale_date = target_date
+        sale.market_name = target_text["marketName"]
+        sale.buyer_name = target_text["buyerName"]
+        sale.quantity_sold = target_quantity
+        sale.rate_per_unit = target_rate
+        sale.gross_amount = target_gross
+        sale.unit = target_unit
+        sale.commission = target_money["commission"]
+        sale.market_fee = target_money["marketFee"]
+        sale.other_deduction = target_money["otherDeduction"]
+        sale.notes = target_text["notes"]
 
         db.session.commit()
 
         return jsonify({
             "message": "Market sale updated successfully",
             "marketSale": market_sale_to_dict(sale)
-        })
+        }), 200
 
-    except ValueError:
-
-        return jsonify({
-            "error": "saleDate must use YYYY-MM-DD format"
-        }), 400
-
-    except Exception as e:
-
+    except Exception:
         db.session.rollback()
-
         return jsonify({
-            "error": str(e)
+            "status": "error",
+            "message": "Unable to update market sale. Check the supplied data."
         }), 500
 
 
@@ -289,32 +673,37 @@ def update_market_sale(id):
 # DELETE MARKET SALE
 # ============================================================
 
-@market_sale_bp.route(
-    "/api/market-sales/<int:id>",
-    methods=["DELETE"]
-)
+@market_sale_bp.route("/api/market-sales/<int:id>", methods=["DELETE"])
 def delete_market_sale(id):
-
-    sale = MarketSale.query.get(id)
-
-    if not sale:
-        return jsonify({
-            "error": "Market sale not found"
-        }), 404
+    user, error = require_user()
+    if error:
+        return error
 
     try:
+        sale = db.session.get(MarketSale, id)
+
+        if sale is None:
+            return jsonify({
+                "status": "error",
+                "message": "Market sale not found."
+            }), 404
+
+        if not can_manage_farmer(user, sale.farmer_id):
+            return jsonify({
+                "status": "error",
+                "message": "You are not authorized to delete this sale."
+            }), 403
 
         db.session.delete(sale)
         db.session.commit()
 
         return jsonify({
             "message": "Market sale deleted successfully"
-        })
+        }), 200
 
-    except Exception as e:
-
+    except Exception:
         db.session.rollback()
-
         return jsonify({
-            "error": str(e)
+            "status": "error",
+            "message": "Unable to delete market sale. Check related records."
         }), 500

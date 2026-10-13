@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from backend.extensions import db
 from backend.models.village import Village
+from backend.auth_utils import admin_required
 
 
 village_bp = Blueprint(
@@ -85,6 +86,7 @@ def get_village(id):
     "/api/villages",
     methods=["POST"]
 )
+@admin_required
 def create_village():
 
     data = request.get_json()
@@ -141,12 +143,12 @@ def create_village():
             "village": village_to_dict(village)
         }), 201
 
-    except Exception as e:
+    except Exception:
 
         db.session.rollback()
 
         return jsonify({
-            "error": str(e)
+            "error": "Unable to create village. Check the supplied data."
         }), 500
 
 
@@ -158,6 +160,7 @@ def create_village():
     "/api/villages/<int:id>",
     methods=["PUT"]
 )
+@admin_required
 def update_village(id):
 
     village = Village.query.get(id)
@@ -212,12 +215,12 @@ def update_village(id):
             "village": village_to_dict(village)
         })
 
-    except Exception as e:
+    except Exception:
 
         db.session.rollback()
 
         return jsonify({
-            "error": str(e)
+            "error": "Unable to update village. Check the supplied data."
         }), 500
 
 
@@ -229,6 +232,7 @@ def update_village(id):
     "/api/villages/<int:id>",
     methods=["DELETE"]
 )
+@admin_required
 def delete_village(id):
 
     village = Village.query.get(id)
@@ -247,10 +251,10 @@ def delete_village(id):
             "message": "Village deleted successfully"
         })
 
-    except Exception as e:
+    except Exception:
 
         db.session.rollback()
 
         return jsonify({
-            "error": str(e)
+            "error": "Unable to delete village. It may have related records."
         }), 500

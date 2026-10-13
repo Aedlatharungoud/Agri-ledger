@@ -1,0 +1,521 @@
+.anomaly-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f6f8f7;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.anomaly-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.anomaly-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.anomaly-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #fff1e8;
+  font-size: 28px;
+}
+
+.anomaly-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #7a857f;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.anomaly-header h1 {
+  margin: 0;
+  color: #173b2a;
+  font-size: 30px;
+}
+
+.anomaly-header p {
+  margin: 5px 0 0;
+  color: #6b7c74;
+  font-size: 14px;
+}
+
+.anomaly-refresh-button {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 17px;
+  background: #176b50;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.anomaly-refresh-button:hover {
+  background: #12563f;
+}
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.anomaly-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.anomaly-summary-card {
+  padding: 22px;
+  background: white;
+  border: 1px solid #e5ebe8;
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(20, 55, 40, 0.04);
+}
+
+.anomaly-summary-card span {
+  display: block;
+  margin-bottom: 9px;
+  color: #718078;
+  font-size: 13px;
+}
+
+.anomaly-summary-card strong {
+  display: block;
+  color: #173f30;
+  font-size: 29px;
+}
+
+.anomaly-summary-card small {
+  display: block;
+  margin-top: 7px;
+  color: #89958f;
+  font-size: 12px;
+}
+
+.anomaly-summary-card.review-required {
+  background: #fff8f2;
+  border-color: #f2d5bd;
+}
+
+.anomaly-summary-card.review-required strong {
+  color: #b54708;
+}
+
+.anomaly-summary-card.review-clear {
+  background: #f1faf4;
+  border-color: #d7ebdc;
+}
+
+.anomaly-summary-card.review-clear strong {
+  color: #176b50;
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.anomaly-section {
+  padding: 25px;
+  margin-bottom: 26px;
+  background: white;
+  border: 1px solid #e5ebe8;
+  border-radius: 18px;
+  box-shadow: 0 3px 12px rgba(20, 55, 40, 0.04);
+}
+
+.anomaly-section-header {
+  margin-bottom: 22px;
+}
+
+.anomaly-section-header h2 {
+  margin: 0;
+  color: #183f30;
+  font-size: 21px;
+}
+
+.anomaly-section-header p {
+  margin: 5px 0 0;
+  color: #7b8982;
+  font-size: 13px;
+}
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.anomaly-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 18px;
+  border-radius: 13px;
+}
+
+.status-success {
+  background: #eef8f2;
+  border: 1px solid #d8ebdd;
+}
+
+.status-warning {
+  background: #fff6ed;
+  border: 1px solid #f2d6bd;
+}
+
+.anomaly-status-icon {
+  font-size: 24px;
+}
+
+.anomaly-status strong {
+  display: block;
+  color: #244d3b;
+  font-size: 14px;
+}
+
+.status-warning strong {
+  color: #a34b0a;
+}
+
+.anomaly-status p {
+  margin: 6px 0 0;
+  color: #6e7b74;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.anomaly-empty {
+  padding: 50px 24px;
+  text-align: center;
+}
+
+.anomaly-empty-icon {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #e8f5ec;
+  color: #176b50;
+  font-size: 27px;
+  font-weight: 700;
+}
+
+.anomaly-empty h3 {
+  margin: 0 0 8px;
+  color: #173b2a;
+  font-size: 19px;
+}
+
+.anomaly-empty p {
+  max-width: 600px;
+  margin: 6px auto;
+  color: #748079;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================================================
+   FARMER ANOMALIES
+========================================================= */
+
+.anomaly-farmer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.anomaly-farmer-card {
+  padding: 20px;
+  background: #fbfcfc;
+  border: 1px solid #e3eae6;
+  border-radius: 15px;
+}
+
+.anomaly-farmer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.anomaly-farmer-header h3 {
+  margin: 0 0 4px;
+  color: #183f30;
+  font-size: 18px;
+}
+
+.anomaly-farmer-header span {
+  color: #7c8983;
+  font-size: 12px;
+}
+
+.anomaly-count-badge {
+  min-width: 70px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fff0e7;
+  color: #b54708;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.anomaly-count-badge small {
+  display: block;
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   ANOMALY ITEM
+========================================================= */
+
+.anomaly-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.anomaly-item {
+  padding: 17px 0;
+  border-top: 1px solid #e9eeeb;
+}
+
+.anomaly-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.anomaly-item-top h4 {
+  display: inline-block;
+  margin: 0 0 0 9px;
+  color: #274c3d;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.anomaly-item-top > strong {
+  color: #173f30;
+  font-size: 15px;
+}
+
+.severity-badge {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 12px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.severity-badge.high {
+  background: #fde8e7;
+  color: #b42318;
+}
+
+.severity-badge.medium {
+  background: #fff0d9;
+  color: #9a6700;
+}
+
+.severity-badge.low {
+  background: #e7f4eb;
+  color: #176b50;
+}
+
+.anomaly-reason {
+  margin: 9px 0;
+  color: #6f7c75;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.anomaly-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.anomaly-details span {
+  color: #8a958f;
+  font-size: 11px;
+}
+
+.normal-range {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 13px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f3f6f4;
+}
+
+.normal-range span {
+  color: #738079;
+  font-size: 11px;
+}
+
+.normal-range strong {
+  color: #315b49;
+  font-size: 11px;
+}
+
+/* =========================================================
+   FARMER SCAN
+========================================================= */
+
+.farmer-scan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.farmer-scan-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: #fafcfb;
+  border: 1px solid #e6ebe8;
+  border-radius: 11px;
+}
+
+.farmer-scan-avatar {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #dcecdf;
+  color: #24583b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.farmer-scan-info {
+  flex: 1;
+}
+
+.farmer-scan-info strong {
+  display: block;
+  color: #294c3d;
+  font-size: 13px;
+}
+
+.farmer-scan-info span {
+  display: block;
+  margin-top: 3px;
+  color: #849089;
+  font-size: 11px;
+}
+
+.scan-success,
+.scan-warning {
+  padding: 5px 9px;
+  border-radius: 12px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.scan-success {
+  background: #e6f5eb;
+  color: #176b50;
+}
+
+.scan-warning {
+  background: #fff0e7;
+  color: #b54708;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+  .anomaly-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .farmer-scan-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .anomaly-page {
+    padding: 18px;
+  }
+
+  .anomaly-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .anomaly-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .anomaly-section {
+    padding: 18px;
+  }
+
+  .anomaly-item-top {
+    flex-direction: column;
+  }
+}
+
+/* =========================================================
+   LOADING / ERROR
+========================================================= */
+
+.anomaly-state {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.anomaly-state-icon {
+  margin-bottom: 15px;
+  font-size: 48px;
+}
+
+.anomaly-state h2 {
+  margin: 0 0 8px;
+  color: #183f30;
+}
+
+.anomaly-state p {
+  max-width: 500px;
+  color: #7a8781;
+  line-height: 1.6;
+}

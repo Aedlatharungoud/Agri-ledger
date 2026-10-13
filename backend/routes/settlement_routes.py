@@ -3,6 +3,7 @@ from datetime import date
 
 from backend.extensions import db
 from backend.models.settlement import Settlement
+from backend.auth_utils import get_current_user
 
 
 settlement_bp = Blueprint(
@@ -16,7 +17,6 @@ settlement_bp = Blueprint(
 # ============================================================
 
 def settlement_to_dict(settlement):
-
     return {
         "id": settlement.id,
 
@@ -91,7 +91,122 @@ def settlement_to_dict(settlement):
 
 
 # ============================================================
+# HELPER: CALCULATE FINAL SETTLEMENT AMOUNT
+# ============================================================
+
+def calculate_final_amount(
+    total_crop_sales,
+    total_input_credit,
+    total_labour_credit,
+    total_transport,
+    total_deductions,
+    total_interest,
+):
+    """
+    Final farmer settlement before payments:
+
+    Gross Crop Sales
+    - Input Credit
+    - Labour Credit
+    - Transport
+    - Sale Deductions
+    - Interest
+    """
+    return round(
+        float(total_crop_sales or 0)
+        - float(total_input_credit or 0)
+        - float(total_labour_credit or 0)
+        - float(total_transport or 0)
+        - float(total_deductions or 0)
+        - float(total_interest or 0),
+        2,
+    )
+
+
+def is_transport_deduction(deduction_type: str) -> bool:
+    """
+    Check if a sale deduction type represents transport charges.
+    Transport records are the canonical source of truth for transport costs.
+    """
+    if not deduction_type:
+        return False
+    dtype = str(deduction_type).strip().lower()
+    return any(
+        kw in dtype
+        for kw in ("transport", "freight", "truck", "lorry")
+    )
+
+
+# ============================================================
+# HELPERS: AUTHORIZATION
+# ============================================================
+
+def require_user():
+    """
+    Return (user, None) for a valid authenticated active user.
+    Return (None, error_response_tuple) otherwise.
+
+    Follows the same pattern used in farmer_payment_routes.py
+    and harvest_routes.py.
+    """
+    user = get_current_user()
+
+    if user is None:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "Authentication required.",
+            }),
+            401,
+        )
+
+    if user.role not in ("ADMIN", "FARMER"):
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "You do not have permission to access this resource.",
+            }),
+            403,
+        )
+
+    if user.role == "FARMER" and not user.farmer_id:
+        return None, (
+            jsonify({
+                "status": "error",
+                "message": "Farmer account is not linked to a farmer record.",
+            }),
+            403,
+        )
+
+    return user, None
+
+
+def can_access_settlement(user, settlement):
+    """
+    Return True if the current user is permitted to read this settlement.
+
+    ADMIN:
+        Can access every settlement.
+
+    FARMER:
+        Can access only settlements that belong to their own farmer record.
+    """
+    if user.role == "ADMIN":
+        return True
+
+    return (
+        user.role == "FARMER"
+        and user.farmer_id is not None
+        and int(user.farmer_id) == int(settlement.farmer_id)
+    )
+
+
+# ============================================================
 # GET ALL SETTLEMENTS
+#
+# ADMIN  : returns every settlement.
+# FARMER : returns only settlements belonging to their own
+#          farmer account.
 # ============================================================
 
 @settlement_bp.route(
@@ -100,7 +215,17 @@ def settlement_to_dict(settlement):
 )
 def get_settlements():
 
-    settlements = Settlement.query.all()
+    user, error = require_user()
+    if error:
+        return error
+
+    if user.role == "ADMIN":
+        settlements = Settlement.query.all()
+    else:
+        # FARMER: filter to their own records only.
+        settlements = Settlement.query.filter_by(
+            farmer_id=user.farmer_id
+        ).all()
 
     return jsonify([
         settlement_to_dict(settlement)
@@ -110,6 +235,10 @@ def get_settlements():
 
 # ============================================================
 # GET SINGLE SETTLEMENT
+#
+# ADMIN  : can access any settlement.
+# FARMER : can access only a settlement belonging to their
+#          own farmer account.
 # ============================================================
 
 @settlement_bp.route(
@@ -118,13 +247,21 @@ def get_settlements():
 )
 def get_settlement(id):
 
+    user, error = require_user()
+    if error:
+        return error
+
     settlement = Settlement.query.get(id)
 
     if not settlement:
-
         return jsonify({
             "error": "Settlement not found"
         }), 404
+
+    if not can_access_settlement(user, settlement):
+        return jsonify({
+            "error": "You are not authorized to access this settlement.",
+        }), 403
 
     return jsonify(
         settlement_to_dict(settlement)
@@ -133,6 +270,7 @@ def get_settlement(id):
 
 # ============================================================
 # CREATE SETTLEMENT MANUALLY
+# ADMIN only.
 # ============================================================
 
 @settlement_bp.route(
@@ -141,10 +279,18 @@ def get_settlement(id):
 )
 def create_settlement():
 
+    user, error = require_user()
+    if error:
+        return error
+
+    if user.role != "ADMIN":
+        return jsonify({
+            "error": "Administrator access required.",
+        }), 403
+
     data = request.get_json()
 
     if not data:
-
         return jsonify({
             "error": "Request body is required"
         }), 400
@@ -155,9 +301,7 @@ def create_settlement():
     ]
 
     for field in required_fields:
-
         if field not in data:
-
             return jsonify({
                 "error": f"{field} is required"
             }), 400
@@ -168,98 +312,103 @@ def create_settlement():
             data["settlementDate"]
         )
 
+        from backend.models.farmer import Farmer
+        target_farmer = Farmer.query.get(data["farmerId"])
+        if not target_farmer:
+            return jsonify({
+                "error": "The specified farmerId does not exist.",
+            }), 404
+
+        if data.get("cropSeasonId"):
+            from backend.models.crop_season import CropSeason
+            from backend.models.field import Field
+            target_season = CropSeason.query.get(data["cropSeasonId"])
+            if not target_season:
+                return jsonify({
+                    "error": "The specified cropSeasonId does not exist.",
+                }), 404
+            field = Field.query.get(target_season.field_id)
+            if not field or field.farmer_id != data["farmerId"]:
+                return jsonify({
+                    "error": "The specified cropSeasonId does not belong to this farmer.",
+                }), 400
+
+        total_crop_sales = float(
+            data.get("totalCropSales", 0) or 0
+        )
+        total_input_credit = float(
+            data.get("totalInputCredit", 0) or 0
+        )
+        total_labour_credit = float(
+            data.get("totalLabourCredit", 0) or 0
+        )
+        total_transport = float(
+            data.get("totalTransport", 0) or 0
+        )
+        total_deductions = float(
+            data.get("totalDeductions", 0) or 0
+        )
+        total_interest = float(
+            data.get("totalInterest", 0) or 0
+        )
+        total_payments = float(
+            data.get("totalPayments", 0) or 0
+        )
+
+        # IMPORTANT:
+        # Never trust a manually supplied finalAmount.
+        # The backend is the single source of truth.
+        final_amount = calculate_final_amount(
+            total_crop_sales,
+            total_input_credit,
+            total_labour_credit,
+            total_transport,
+            total_deductions,
+            total_interest,
+        )
+
         settlement = Settlement(
-
             farmer_id=data["farmerId"],
-
-            crop_season_id=data.get(
-                "cropSeasonId"
-            ),
-
+            crop_season_id=data.get("cropSeasonId"),
             settlement_date=settlement_date,
-
-            total_crop_sales=data.get(
-                "totalCropSales",
-                0
-            ),
-
-            total_input_credit=data.get(
-                "totalInputCredit",
-                0
-            ),
-
-            total_labour_credit=data.get(
-                "totalLabourCredit",
-                0
-            ),
-
-            total_transport=data.get(
-                "totalTransport",
-                0
-            ),
-
-            total_deductions=data.get(
-                "totalDeductions",
-                0
-            ),
-
-            total_interest=data.get(
-                "totalInterest",
-                0
-            ),
-
-            total_payments=data.get(
-                "totalPayments",
-                0
-            ),
-
-            final_amount=data.get(
-                "finalAmount",
-                0
-            ),
-
+            total_crop_sales=total_crop_sales,
+            total_input_credit=total_input_credit,
+            total_labour_credit=total_labour_credit,
+            total_transport=total_transport,
+            total_deductions=total_deductions,
+            total_interest=total_interest,
+            total_payments=total_payments,
+            final_amount=final_amount,
             settlement_status=data.get(
                 "settlementStatus",
                 "PENDING"
             ),
-
-            notes=data.get(
-                "notes"
-            )
+            notes=data.get("notes")
         )
 
         db.session.add(settlement)
-
         db.session.commit()
 
         return jsonify({
-
             "message":
                 "Settlement created successfully",
-
             "settlement":
                 settlement_to_dict(settlement)
-
         }), 201
 
     except ValueError:
-
+        db.session.rollback()
         return jsonify({
             "error":
-                "settlementDate must use YYYY-MM-DD format"
+                "Settlement date and numeric values are invalid"
         }), 400
 
-    except Exception as e:
-
+    except Exception:
         db.session.rollback()
-
         return jsonify({
-            "error": str(e)
+            "error": "Unable to create settlement. Check the supplied data."
         }), 500
-
-
-# ============================================================
-# UPDATE SETTLEMENT
+# ADMIN only.
 # ============================================================
 
 @settlement_bp.route(
@@ -268,10 +417,18 @@ def create_settlement():
 )
 def update_settlement(id):
 
+    user, error = require_user()
+    if error:
+        return error
+
+    if user.role != "ADMIN":
+        return jsonify({
+            "error": "Administrator access required.",
+        }), 403
+
     settlement = Settlement.query.get(id)
 
     if not settlement:
-
         return jsonify({
             "error": "Settlement not found"
         }), 404
@@ -279,7 +436,6 @@ def update_settlement(id):
     data = request.get_json()
 
     if not data:
-
         return jsonify({
             "error": "Request body is required"
         }), 400
@@ -287,113 +443,103 @@ def update_settlement(id):
     try:
 
         if "farmerId" in data:
-
-            settlement.farmer_id = data[
-                "farmerId"
-            ]
+            from backend.models.farmer import Farmer
+            target_farmer = Farmer.query.get(data["farmerId"])
+            if not target_farmer:
+                return jsonify({
+                    "error": "The specified farmerId does not exist.",
+                }), 404
+            settlement.farmer_id = data["farmerId"]
 
         if "cropSeasonId" in data:
-
-            settlement.crop_season_id = data[
-                "cropSeasonId"
-            ]
+            settlement.crop_season_id = data["cropSeasonId"]
 
         if "settlementDate" in data:
-
             settlement.settlement_date = date.fromisoformat(
                 data["settlementDate"]
             )
 
         if "totalCropSales" in data:
-
-            settlement.total_crop_sales = data[
-                "totalCropSales"
-            ]
+            settlement.total_crop_sales = float(
+                data["totalCropSales"] or 0
+            )
 
         if "totalInputCredit" in data:
-
-            settlement.total_input_credit = data[
-                "totalInputCredit"
-            ]
+            settlement.total_input_credit = float(
+                data["totalInputCredit"] or 0
+            )
 
         if "totalLabourCredit" in data:
-
-            settlement.total_labour_credit = data[
-                "totalLabourCredit"
-            ]
+            settlement.total_labour_credit = float(
+                data["totalLabourCredit"] or 0
+            )
 
         if "totalTransport" in data:
-
-            settlement.total_transport = data[
-                "totalTransport"
-            ]
+            settlement.total_transport = float(
+                data["totalTransport"] or 0
+            )
 
         if "totalDeductions" in data:
-
-            settlement.total_deductions = data[
-                "totalDeductions"
-            ]
+            settlement.total_deductions = float(
+                data["totalDeductions"] or 0
+            )
 
         if "totalInterest" in data:
-
-            settlement.total_interest = data[
-                "totalInterest"
-            ]
+            settlement.total_interest = float(
+                data["totalInterest"] or 0
+            )
 
         if "totalPayments" in data:
+            settlement.total_payments = float(
+                data["totalPayments"] or 0
+            )
 
-            settlement.total_payments = data[
-                "totalPayments"
-            ]
-
-        if "finalAmount" in data:
-
-            settlement.final_amount = data[
-                "finalAmount"
-            ]
+        # IMPORTANT:
+        # Ignore data["finalAmount"].
+        # Always recalculate it from the settlement components.
+        settlement.final_amount = calculate_final_amount(
+            settlement.total_crop_sales,
+            settlement.total_input_credit,
+            settlement.total_labour_credit,
+            settlement.total_transport,
+            settlement.total_deductions,
+            settlement.total_interest,
+        )
 
         if "settlementStatus" in data:
-
             settlement.settlement_status = data[
                 "settlementStatus"
             ]
 
         if "notes" in data:
-
-            settlement.notes = data[
-                "notes"
-            ]
+            settlement.notes = data["notes"]
 
         db.session.commit()
 
         return jsonify({
-
             "message":
                 "Settlement updated successfully",
-
             "settlement":
                 settlement_to_dict(settlement)
-
         })
 
     except ValueError:
-
+        db.session.rollback()
         return jsonify({
             "error":
-                "settlementDate must use YYYY-MM-DD format"
+                "Settlement date and numeric values are invalid"
         }), 400
 
-    except Exception as e:
-
+    except Exception:
         db.session.rollback()
-
         return jsonify({
-            "error": str(e)
+            "error": "Unable to update settlement. Check the supplied data."
         }), 500
 
 
 # ============================================================
 # DELETE SETTLEMENT
+# ADMIN only.
 # ============================================================
 
 @settlement_bp.route(
@@ -402,10 +548,18 @@ def update_settlement(id):
 )
 def delete_settlement(id):
 
+    user, error = require_user()
+    if error:
+        return error
+
+    if user.role != "ADMIN":
+        return jsonify({
+            "error": "Administrator access required.",
+        }), 403
+
     settlement = Settlement.query.get(id)
 
     if not settlement:
-
         return jsonify({
             "error": "Settlement not found"
         }), 404
@@ -421,17 +575,23 @@ def delete_settlement(id):
                 "Settlement deleted successfully"
         })
 
-    except Exception as e:
+    except Exception:
 
         db.session.rollback()
 
         return jsonify({
-            "error": str(e)
+            "error": "Unable to delete settlement. It may have related records."
         }), 500
 
 
 # ============================================================
 # CALCULATE SETTLEMENT
+#
+# ADMIN  : can calculate for any farmer.
+# FARMER : can calculate only for their own farmer_id.
+#
+# The calculation is read-only — it does not write to the
+# database.
 # ============================================================
 
 @settlement_bp.route(
@@ -452,6 +612,26 @@ def calculate_settlement(
     from backend.models.farmer_payment import FarmerPayment
     from backend.models.harvest import Harvest
 
+    # ====================================================
+    # AUTHORIZATION
+    # ====================================================
+
+    user, error = require_user()
+    if error:
+        return error
+
+    if user.role == "FARMER":
+        if (
+            user.farmer_id is None
+            or int(user.farmer_id) != int(farmer_id)
+        ):
+            return jsonify({
+                "error": (
+                    "You can only view calculations "
+                    "for your own farmer account."
+                ),
+            }), 403
+
     try:
 
         # ====================================================
@@ -462,6 +642,7 @@ def calculate_settlement(
             farmer_id=farmer_id,
             crop_season_id=crop_season_id
         ).first()
+
 
         # ====================================================
         # FIND HARVESTS
@@ -476,6 +657,7 @@ def calculate_settlement(
             harvest.id
             for harvest in harvests
         ]
+
 
         # ====================================================
         # MARKET SALES
@@ -497,6 +679,7 @@ def calculate_settlement(
             for sale in sales
         )
 
+
         # ====================================================
         # INPUT CREDIT
         # ====================================================
@@ -507,6 +690,7 @@ def calculate_settlement(
         ).all()
 
         total_input_credit = sum(
+
             float(
                 (purchase.quantity or 0)
                 *
@@ -514,6 +698,7 @@ def calculate_settlement(
                 -
                 (purchase.paid_amount or 0)
             )
+
             for purchase in purchases
 
             if purchase.payment_type in [
@@ -521,6 +706,7 @@ def calculate_settlement(
                 "PARTIAL"
             ]
         )
+
 
         # ====================================================
         # LABOUR CREDIT
@@ -532,11 +718,13 @@ def calculate_settlement(
         ).all()
 
         total_labour_credit = sum(
+
             float(
                 (expense.amount or 0)
                 -
                 (expense.paid_amount or 0)
             )
+
             for expense in labour_expenses
 
             if expense.payment_type in [
@@ -545,8 +733,38 @@ def calculate_settlement(
             ]
         )
 
+
+        # ====================================================
+        # TRANSPORT (Canonical source for transport charges)
+        # ====================================================
+
+        transport_records = []
+
+        if harvest_ids:
+
+            transport_records = TransportRecord.query.filter(
+                TransportRecord.harvest_id.in_(
+                    harvest_ids
+                )
+            ).all()
+
+        total_transport = sum(
+
+            float(record.freight_amount or 0)
+            +
+            float(record.loading_charges or 0)
+            +
+            float(record.unloading_charges or 0)
+
+            for record in transport_records
+        )
+
+
         # ====================================================
         # SALE DEDUCTIONS
+        # Deduplicate transport: if transport is canonically captured
+        # via transport_records, exclude transport-type deductions to
+        # prevent double-counting.
         # ====================================================
 
         sale_ids = [
@@ -564,34 +782,19 @@ def calculate_settlement(
                 )
             ).all()
 
+        if total_transport > 0:
+            deductions_to_sum = [
+                d for d in deductions
+                if not is_transport_deduction(d.deduction_type)
+            ]
+        else:
+            deductions_to_sum = deductions
+
         total_deductions = sum(
             float(deduction.amount or 0)
-            for deduction in deductions
+            for deduction in deductions_to_sum
         )
 
-        # ====================================================
-        # TRANSPORT
-        # ====================================================
-
-        transport_records = []
-
-        if harvest_ids:
-
-            transport_records = TransportRecord.query.filter(
-                TransportRecord.harvest_id.in_(
-                    harvest_ids
-                )
-            ).all()
-
-        total_transport = sum(
-            float(record.freight_amount or 0)
-            +
-            float(record.loading_charges or 0)
-            +
-            float(record.unloading_charges or 0)
-
-            for record in transport_records
-        )
 
         # ====================================================
         # INTEREST
@@ -607,17 +810,9 @@ def calculate_settlement(
             for charge in interest_charges
         )
 
+
         # ====================================================
         # FARMER PAYMENTS
-        #
-        # IMPORTANT:
-        #
-        # Payments are now connected directly to settlements.
-        #
-        # If this crop season already has a settlement,
-        # only payments belonging to that settlement are counted.
-        #
-        # If no settlement exists yet, payments are zero.
         # ====================================================
 
         total_payments = 0.0
@@ -634,24 +829,41 @@ def calculate_settlement(
                 for payment in payments
             )
 
+
         # ====================================================
-        # FINAL AMOUNT
+        # FINAL SETTLEMENT
         #
-        # Transport is NOT subtracted separately because
-        # transport may already be included in sale deductions.
+        # Gross Sales
+        # - Input Credit
+        # - Labour Credit
+        # - Transport
+        # - Sale Deductions
+        # - Interest
+        #
+        # IMPORTANT:
+        # Transport is now correctly included.
         # ====================================================
 
-        final_amount = (
-            total_crop_sales
-            -
-            total_input_credit
-            -
-            total_labour_credit
-            -
-            total_deductions
-            -
-            total_interest
+        final_amount = calculate_final_amount(
+            total_crop_sales,
+            total_input_credit,
+            total_labour_credit,
+            total_transport,
+            total_deductions,
+            total_interest,
         )
+
+
+        # ====================================================
+        # OUTSTANDING AMOUNT
+        # ====================================================
+
+        outstanding_amount = (
+            final_amount
+            -
+            total_payments
+        )
+
 
         # ====================================================
         # RETURN CALCULATION
@@ -713,19 +925,29 @@ def calculate_settlement(
                     2
                 ),
 
+            "outstandingAmount":
+                round(
+                    outstanding_amount,
+                    2
+                ),
+
             "status":
                 "CALCULATED"
         })
 
-    except Exception as e:
+    except Exception:
 
         return jsonify({
-            "error": str(e)
+            "error": "Unable to calculate settlement. Check the farmer and crop season."
         }), 500
 
 
 # ============================================================
 # GENERATE AUTOMATIC SETTLEMENT
+# ADMIN only.
+#
+# Farmers must not be able to generate or alter their own
+# settlement records.
 # ============================================================
 
 @settlement_bp.route(
@@ -743,8 +965,43 @@ def generate_settlement(
     from backend.models.sale_deduction import SaleDeduction
     from backend.models.transport_record import TransportRecord
     from backend.models.interest_charge import InterestCharge
+    from backend.models.harvest import Harvest
+
+    # ====================================================
+    # AUTHORIZATION
+    # ====================================================
+
+    user, error = require_user()
+    if error:
+        return error
+
+    if user.role != "ADMIN":
+        return jsonify({
+            "error": "Administrator access required.",
+        }), 403
 
     try:
+        from backend.models.farmer import Farmer
+        from backend.models.crop_season import CropSeason
+        from backend.models.field import Field
+
+        target_farmer = Farmer.query.get(farmer_id)
+        if not target_farmer:
+            return jsonify({
+                "error": "The specified farmerId does not exist.",
+            }), 404
+
+        target_season = CropSeason.query.get(crop_season_id)
+        if not target_season:
+            return jsonify({
+                "error": "The specified cropSeasonId does not exist.",
+            }), 404
+
+        field = Field.query.get(target_season.field_id)
+        if not field or field.farmer_id != farmer_id:
+            return jsonify({
+                "error": "The specified cropSeasonId does not belong to this farmer.",
+            }), 400
 
         # ====================================================
         # CHECK EXISTING SETTLEMENT
@@ -769,6 +1026,7 @@ def generate_settlement(
 
             }), 409
 
+
         # ====================================================
         # FIND HARVESTS
         # ====================================================
@@ -782,6 +1040,7 @@ def generate_settlement(
             harvest.id
             for harvest in harvests
         ]
+
 
         # ====================================================
         # MARKET SALES
@@ -803,6 +1062,7 @@ def generate_settlement(
             for sale in sales
         )
 
+
         # ====================================================
         # INPUT CREDIT
         # ====================================================
@@ -813,6 +1073,7 @@ def generate_settlement(
         ).all()
 
         total_input_credit = sum(
+
             float(
                 (purchase.quantity or 0)
                 *
@@ -820,6 +1081,7 @@ def generate_settlement(
                 -
                 (purchase.paid_amount or 0)
             )
+
             for purchase in purchases
 
             if purchase.payment_type in [
@@ -827,6 +1089,7 @@ def generate_settlement(
                 "PARTIAL"
             ]
         )
+
 
         # ====================================================
         # LABOUR CREDIT
@@ -838,11 +1101,13 @@ def generate_settlement(
         ).all()
 
         total_labour_credit = sum(
+
             float(
                 (expense.amount or 0)
                 -
                 (expense.paid_amount or 0)
             )
+
             for expense in labour_expenses
 
             if expense.payment_type in [
@@ -851,8 +1116,38 @@ def generate_settlement(
             ]
         )
 
+
+        # ====================================================
+        # TRANSPORT (Canonical source for transport charges)
+        # ====================================================
+
+        transport_records = []
+
+        if harvest_ids:
+
+            transport_records = TransportRecord.query.filter(
+                TransportRecord.harvest_id.in_(
+                    harvest_ids
+                )
+            ).all()
+
+        total_transport = sum(
+
+            float(record.freight_amount or 0)
+            +
+            float(record.loading_charges or 0)
+            +
+            float(record.unloading_charges or 0)
+
+            for record in transport_records
+        )
+
+
         # ====================================================
         # SALE DEDUCTIONS
+        # Deduplicate transport: if transport is canonically captured
+        # via transport_records, exclude transport-type deductions to
+        # prevent double-counting.
         # ====================================================
 
         sale_ids = [
@@ -870,34 +1165,19 @@ def generate_settlement(
                 )
             ).all()
 
+        if total_transport > 0:
+            deductions_to_sum = [
+                d for d in deductions
+                if not is_transport_deduction(d.deduction_type)
+            ]
+        else:
+            deductions_to_sum = deductions
+
         total_deductions = sum(
             float(deduction.amount or 0)
-            for deduction in deductions
+            for deduction in deductions_to_sum
         )
 
-        # ====================================================
-        # TRANSPORT
-        # ====================================================
-
-        transport_records = []
-
-        if harvest_ids:
-
-            transport_records = TransportRecord.query.filter(
-                TransportRecord.harvest_id.in_(
-                    harvest_ids
-                )
-            ).all()
-
-        total_transport = sum(
-            float(record.freight_amount or 0)
-            +
-            float(record.loading_charges or 0)
-            +
-            float(record.unloading_charges or 0)
-
-            for record in transport_records
-        )
 
         # ====================================================
         # INTEREST
@@ -913,27 +1193,34 @@ def generate_settlement(
             for charge in interest_charges
         )
 
+
         # ====================================================
-        # NEW SETTLEMENT HAS NO PAYMENTS YET
+        # NEW SETTLEMENT HAS NO PAYMENTS
         # ====================================================
 
         total_payments = 0.0
 
+
         # ====================================================
-        # FINAL AMOUNT
+        # FINAL SETTLEMENT
+        #
+        # Gross Sales
+        # - Input Credit
+        # - Labour Credit
+        # - Transport
+        # - Sale Deductions
+        # - Interest
         # ====================================================
 
-        final_amount = (
-            total_crop_sales
-            -
-            total_input_credit
-            -
-            total_labour_credit
-            -
-            total_deductions
-            -
-            total_interest
+        final_amount = calculate_final_amount(
+            total_crop_sales,
+            total_input_credit,
+            total_labour_credit,
+            total_transport,
+            total_deductions,
+            total_interest,
         )
+
 
         # ====================================================
         # CREATE SETTLEMENT
@@ -965,12 +1252,15 @@ def generate_settlement(
 
             settlement_status="PENDING",
 
-            notes="Automatically generated settlement"
+            notes=
+                "Automatically generated settlement"
         )
+
 
         db.session.add(settlement)
 
         db.session.commit()
+
 
         # ====================================================
         # RETURN CREATED SETTLEMENT
@@ -988,10 +1278,11 @@ def generate_settlement(
 
         }), 201
 
-    except Exception as e:
+
+    except Exception:
 
         db.session.rollback()
 
         return jsonify({
-            "error": str(e)
+            "error": "Unable to generate settlement. Check the farmer and crop season."
         }), 500

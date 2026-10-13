@@ -1,0 +1,381 @@
+/* ==========================================================================
+   AgriLedger AI — Executive Admin Dashboard Stylesheet
+   ========================================================================== */
+
+@import "../styles/tokens.css";
+
+.al-admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6, 24px);
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   Dealer Executive Hero Banner
+   -------------------------------------------------------------------------- */
+.al-dealer-hero {
+  position: relative;
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  background-color: var(--color-primary-forest, #174D35);
+  box-shadow: 0 4px 20px rgba(23, 77, 53, 0.15);
+  min-height: 200px;
+  display: flex;
+  align-items: stretch;
+}
+
+.al-dealer-hero__image-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  background-size: cover;
+  background-position: center right;
+  opacity: 0.85;
+  transition: transform 0.6s ease;
+}
+
+.al-dealer-hero:hover .al-dealer-hero__image-bg {
+  transform: scale(1.02);
+}
+
+.al-dealer-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(23, 77, 53, 0.98) 0%,
+    rgba(23, 77, 53, 0.94) 45%,
+    rgba(23, 77, 53, 0.5) 75%,
+    rgba(23, 77, 53, 0.2) 100%
+  );
+}
+
+.al-dealer-hero__content {
+  position: relative;
+  z-index: 2;
+  padding: 32px 36px;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #FFFFFF;
+}
+
+.al-dealer-hero__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #D1E7DD;
+  margin-bottom: 10px;
+  width: fit-content;
+}
+
+.al-dealer-hero__title {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.al-dealer-hero__subtitle {
+  margin: 0 0 20px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #D3E4DB;
+  font-weight: 400;
+}
+
+.al-dealer-hero__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Section Layouts & Headers
+   -------------------------------------------------------------------------- */
+.al-dashboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.al-section-header {
+  margin-bottom: 4px;
+}
+
+.al-section-header__eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-action-green, #2F855A);
+  margin-bottom: 3px;
+}
+
+.al-section-header__title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--color-text-primary, #18251E);
+  line-height: 1.3;
+}
+
+.al-section-header__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted, #768A7E);
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------------------------------
+   KPI Top Grid (6 Columns / Responsive)
+   -------------------------------------------------------------------------- */
+.al-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Financial Highlights Grid (4 Columns)
+   -------------------------------------------------------------------------- */
+.al-financial-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.al-financial-card {
+  padding: 20px 22px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E8E4);
+  border-radius: var(--radius-xl, 14px);
+  box-shadow: 0 1px 3px rgba(24, 37, 30, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.al-financial-card--highlight {
+  border-color: var(--color-action-border, #C6E2D5);
+  background: linear-gradient(180deg, #FFFFFF 0%, #E8F3ED 100%);
+}
+
+.al-financial-card__label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-text-muted, #768A7E);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.al-financial-card__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text-primary, #18251E);
+  line-height: 1.2;
+}
+
+.al-financial-card__subtext {
+  font-size: 12px;
+  color: var(--color-text-secondary, #4A5E53);
+}
+
+/* --------------------------------------------------------------------------
+   Analytics & Charts Grid (2 Columns)
+   -------------------------------------------------------------------------- */
+.al-analytics-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   Operations Modules Grid (4 Columns)
+   -------------------------------------------------------------------------- */
+.al-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.al-module-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px 20px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E8E4);
+  border-radius: var(--radius-lg, 12px);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(24, 37, 30, 0.03);
+  box-sizing: border-box;
+}
+
+.al-module-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-action-green, #2F855A);
+  box-shadow: 0 6px 18px rgba(23, 77, 53, 0.09);
+}
+
+.al-module-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.al-module-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background-color: var(--color-surface-subtle, #F9FAF9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.al-module-card__count {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  background-color: var(--color-surface-muted, #F0F4F1);
+  color: var(--color-text-secondary, #4A5E53);
+  border-radius: 9999px;
+}
+
+.al-module-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #18251E);
+  line-height: 1.3;
+}
+
+.al-module-card__desc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--color-text-muted, #768A7E);
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------------------------------
+   AI Command Center Grid (4 Columns)
+   -------------------------------------------------------------------------- */
+.al-ai-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.al-ai-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px 20px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F9FAF9 100%);
+  border: 1px solid var(--color-border, #E2E8E4);
+  border-radius: var(--radius-lg, 12px);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.al-ai-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-action-green, #2F855A);
+  box-shadow: 0 6px 18px rgba(24, 37, 30, 0.08);
+}
+
+.al-ai-card__icon {
+  font-size: 24px;
+  margin-bottom: 12px;
+  display: inline-block;
+  line-height: 1;
+}
+
+.al-ai-card__title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--color-text-primary, #18251E);
+  line-height: 1.3;
+}
+
+.al-ai-card__desc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--color-text-muted, #768A7E);
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Layout Rules
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .al-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .al-financial-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .al-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .al-modules-grid,
+  .al-ai-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .al-dealer-hero {
+    min-height: auto;
+  }
+  .al-dealer-hero__image-bg {
+    width: 100%;
+    opacity: 0.25;
+  }
+  .al-dealer-hero__overlay {
+    background: rgba(23, 77, 53, 0.94);
+  }
+  .al-dealer-hero__content {
+    padding: 24px 20px;
+  }
+  .al-dealer-hero__title {
+    font-size: 22px;
+  }
+  .al-kpi-grid,
+  .al-financial-grid,
+  .al-modules-grid,
+  .al-ai-grid {
+    grid-template-columns: 1fr;
+  }
+}

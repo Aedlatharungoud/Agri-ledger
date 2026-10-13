@@ -7,18 +7,18 @@ class MarketSale(db.Model):
     __tablename__ = "market_sales"
 
     id = db.Column(
-        db.BigInteger,
+        db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
     farmer_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         nullable=False
     )
 
     harvest_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         nullable=False
     )
 

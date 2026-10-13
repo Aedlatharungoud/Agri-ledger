@@ -1,5 +1,6 @@
-from backend.extensions import db
 from datetime import datetime
+
+from backend.extensions import db
 
 
 class LabourExpense(db.Model):
@@ -7,23 +8,23 @@ class LabourExpense(db.Model):
     __tablename__ = "labour_expenses"
 
     id = db.Column(
-        db.BigInteger,
+        db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
     farmer_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         nullable=False
     )
 
     field_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         nullable=False
     )
 
     crop_season_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         nullable=False
     )
 

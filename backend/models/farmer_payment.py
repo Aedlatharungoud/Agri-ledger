@@ -6,19 +6,19 @@ class FarmerPayment(db.Model):
     __tablename__ = "farmer_payments"
 
     id = db.Column(
-        db.BigInteger,
+        db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
     farmer_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         db.ForeignKey("farmers.id"),
         nullable=False
     )
 
     settlement_id = db.Column(
-        db.BigInteger,
+        db.Integer,
         db.ForeignKey(
             "settlements.id",
             ondelete="SET NULL"

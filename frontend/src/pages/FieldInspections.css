@@ -1,0 +1,378 @@
+/* ============================================================================
+   AgriLedger AI — Field Inspection & Appointments Styling
+   Design System: Forest Green (#174D35), Action Green (#2F855A), Sand/White (#F5F8F5)
+   ============================================================================ */
+
+.fi-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 3rem;
+}
+
+/* Hero Section */
+.fi-hero {
+  background: linear-gradient(135deg, #174D35 0%, #205e42 60%, #2F855A 100%);
+  border-radius: var(--radius-lg, 12px);
+  padding: 2rem 2.25rem;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  box-shadow: 0 4px 18px rgba(23, 77, 53, 0.18);
+}
+
+.fi-hero__content {
+  max-width: 650px;
+}
+
+.fi-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.fi-hero__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.fi-hero__subtitle {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 1.25rem;
+}
+
+.fi-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.fi-hero__icon {
+  font-size: 4rem;
+  background: rgba(255, 255, 255, 0.12);
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Tabs */
+.fi-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #E2E8F0;
+  padding-bottom: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.fi-tab {
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  border: none;
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: #4A5568;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fi-tab:hover {
+  color: #174D35;
+  background: #EDF2F7;
+}
+
+.fi-tab--active {
+  color: #174D35;
+  background: #ffffff;
+  border-bottom: 3px solid #2F855A;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.fi-tab__count {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background: #E2E8F0;
+  color: #2D3748;
+}
+
+.fi-tab--active .fi-tab__count {
+  background: #2F855A;
+  color: #ffffff;
+}
+
+/* Filter bar */
+.fi-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  background: #ffffff;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid #E2E8F0;
+}
+
+.fi-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Slot Selection Cards */
+.fi-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.fi-slot-card {
+  border: 2px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.fi-slot-card:hover:not(.fi-slot-card--disabled) {
+  border-color: #2F855A;
+  box-shadow: 0 4px 12px rgba(47, 133, 90, 0.12);
+  transform: translateY(-2px);
+}
+
+.fi-slot-card--selected {
+  border-color: #2F855A;
+  background: #F0FDF4;
+  box-shadow: 0 0 0 1px #2F855A;
+}
+
+.fi-slot-card--disabled {
+  background: #F7FAFC;
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: #E2E8F0;
+}
+
+.fi-slot-card__date {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1A202C;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.fi-slot-card__time {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2F855A;
+  margin-bottom: 0.5rem;
+}
+
+.fi-slot-card__meta {
+  font-size: 0.8rem;
+  color: #718096;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #E2E8F0;
+}
+
+/* Appointment Cards for Farmer */
+.fi-appoint-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.fi-appoint-card {
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.fi-appoint-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+}
+
+.fi-appoint-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.fi-appoint-card__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #174D35;
+  margin: 0 0 0.2rem;
+}
+
+.fi-appoint-card__date {
+  font-size: 0.85rem;
+  color: #4A5568;
+  font-weight: 600;
+}
+
+.fi-appoint-card__body {
+  margin-bottom: 1rem;
+}
+
+.fi-appoint-card__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #F7FAFC;
+}
+
+.fi-appoint-card__label {
+  color: #718096;
+}
+
+.fi-appoint-card__value {
+  font-weight: 600;
+  color: #2D3748;
+  text-align: right;
+}
+
+.fi-appoint-card__symptoms {
+  margin-top: 0.75rem;
+  background: #F7FAFC;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.825rem;
+  color: #4A5568;
+  border-left: 3px solid #CBD5E0;
+}
+
+.fi-appoint-card__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #EDF2F7;
+}
+
+/* Report Detail View */
+.fi-report-box {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.fi-report-box__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #166534;
+  margin: 0 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fi-report-section {
+  margin-bottom: 1rem;
+}
+
+.fi-report-section__label {
+  font-size: 0.775rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #15803D;
+  margin-bottom: 0.25rem;
+}
+
+.fi-report-section__text {
+  font-size: 0.925rem;
+  line-height: 1.5;
+  color: #1F2937;
+  background: #ffffff;
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+}
+
+.fi-prescription {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 8px;
+  padding: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.fi-prescription__badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1D4ED8;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .fi-hero {
+    flex-direction: column;
+    padding: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .fi-hero__icon {
+    display: none;
+  }
+
+  .fi-appoint-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fi-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fi-filter-group {
+    width: 100%;
+  }
+}
