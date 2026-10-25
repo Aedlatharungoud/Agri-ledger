@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: agriledger-ai-backend
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT backend.app:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_ENV
+        value: production
+      - key: AGRILEDGER_SECRET_KEY
+        generateValue: true
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_PORT
+        value: "4000"
+      - key: MYSQL_USER
+        sync: false
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_DATABASE
+        value: agri_ledger
+      - key: MYSQL_SSL_CA
+        value: backend/certs/isrgrootx1.pem
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SESSION_COOKIE_SAMESITE
+        value: "None"

@@ -13,6 +13,12 @@ __pycache__/
 .env.*
 !.env.example
 
+# Private keys and certificate secrets (public root CA certs e.g. in backend/certs/ are allowed)
+*.key
+*.pem.key
+*.p12
+*.pfx
+
 # ============================================================
 # Node / React
 # ============================================================
@@ -43,6 +49,7 @@ Thumbs.db
 
 *.bak
 *.tmp
+database/backups/
 
 # ============================================================
 # Local database and scratch files

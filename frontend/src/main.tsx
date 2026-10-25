@@ -10,28 +10,23 @@ import { AuthProvider } from "./context/AuthContext";
 
 
 /* ============================================================
-   AG R I L E D G E R   API CONFIGURATION
+   AGRILEDGER API CONFIGURATION
 ============================================================ */
 
-const API_BASE_URL = "http://localhost:5000";
+const rawApiUrl = (import.meta.env.VITE_API_URL || "").trim().replace(/\/+$/, "");
+const API_BASE_URL = rawApiUrl
+  ? (rawApiUrl.endsWith("/api") ? rawApiUrl.slice(0, -4) : rawApiUrl)
+  : (import.meta.env.DEV ? "http://localhost:5000" : "");
 
 
 /* ============================================================
    GLOBAL FETCH CONFIGURATION
 ============================================================
 
-   Existing AgriLedger pages use fetch() directly.
-
-   This wrapper guarantees that:
-
-   1. All API requests use localhost:5000
-   2. All API requests include Flask session cookies
-   3. We do not accidentally mix:
-        localhost
-        127.0.0.1
-
-   This is important because browser cookies are
-   host-specific.
+   Wrapper for fetch() to ensure:
+   1. Requests route to configured API_BASE_URL (or relative in prod)
+   2. Flask session cookies are sent with credentials: "include"
+   3. localhost/127.0.0.1 hostnames are normalized
 ============================================================ */
 
 const originalFetch = window.fetch.bind(window);
@@ -49,15 +44,10 @@ window.fetch = (
   ---------------------------------------------------------- */
 
   if (typeof input === "string") {
-
     requestUrl = input;
-
   } else if (input instanceof URL) {
-
     requestUrl = input.toString();
-
   } else {
-
     requestUrl = input.url;
   }
 
@@ -67,37 +57,27 @@ window.fetch = (
   ---------------------------------------------------------- */
 
   const isApiRequest =
-    requestUrl.includes("/api/");
+    requestUrl.startsWith("/api/") ||
+    requestUrl.startsWith("http://127.0.0.1:5000") ||
+    requestUrl.startsWith("http://localhost:5000") ||
+    (Boolean(API_BASE_URL) && requestUrl.startsWith(API_BASE_URL));
 
 
   if (isApiRequest) {
-
     let normalizedInput: RequestInfo | URL = input;
-
 
     /* --------------------------------------------------------
        Normalize API hostname
-
-       Convert:
-
-       127.0.0.1:5000/api/...
-       
-       to:
-
-       localhost:5000/api/...
     -------------------------------------------------------- */
 
     if (
-      requestUrl.startsWith(
-        "http://127.0.0.1:5000"
-      )
+      requestUrl.startsWith("http://127.0.0.1:5000") ||
+      (API_BASE_URL && requestUrl.startsWith("http://localhost:5000"))
     ) {
-
-      const normalizedUrl =
-        requestUrl.replace(
-          "http://127.0.0.1:5000",
-          API_BASE_URL
-        );
+      const targetHost = API_BASE_URL || "http://localhost:5000";
+      const normalizedUrl = requestUrl
+        .replace("http://127.0.0.1:5000", targetHost)
+        .replace("http://localhost:5000", targetHost);
 
       normalizedInput =
         new Request(
@@ -108,19 +88,13 @@ window.fetch = (
         );
     }
 
-
     /* --------------------------------------------------------
-       Convert relative API URL to localhost backend
+       Convert relative API URL to backend host
     -------------------------------------------------------- */
 
-    else if (
-      requestUrl.startsWith("/api/")
-    ) {
-
-      normalizedInput =
-        `${API_BASE_URL}${requestUrl}`;
+    else if (requestUrl.startsWith("/api/")) {
+      normalizedInput = API_BASE_URL ? `${API_BASE_URL}${requestUrl}` : requestUrl;
     }
-
 
     /* --------------------------------------------------------
        Make sure Flask session cookie is sent
@@ -132,13 +106,11 @@ window.fetch = (
         init?.credentials ?? "include",
     };
 
-
     return originalFetch(
       normalizedInput,
       updatedInit
     );
   }
-
 
   /* ==========================================================
      NON-API REQUEST

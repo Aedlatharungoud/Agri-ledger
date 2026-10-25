@@ -74,6 +74,19 @@ class TestProductionSecurityConfiguration(unittest.TestCase):
             self.assertEqual(app.config["SESSION_COOKIE_NAME"], "agriledger_session")
             self.assertFalse(app.config.get("DEBUG", False))
 
+    def test_production_custom_samesite_cookie(self):
+        """When SESSION_COOKIE_SAMESITE is set to None in production, it is honored and Secure remains True."""
+        env_vars = {
+            "FLASK_ENV": "production",
+            "AGRILEDGER_SECRET_KEY": VALID_STRONG_SECRET,
+            "MYSQL_PASSWORD": "strong-production-mysql-password",
+            "SESSION_COOKIE_SAMESITE": "None",
+        }
+        with patch.dict(os.environ, env_vars):
+            app = create_app()
+            self.assertTrue(app.config["SESSION_COOKIE_SECURE"])
+            self.assertEqual(app.config["SESSION_COOKIE_SAMESITE"], "None")
+
     def test_production_rejects_missing_secret_key(self):
         """Production startup must raise RuntimeError when AGRILEDGER_SECRET_KEY is missing."""
         env_vars = {

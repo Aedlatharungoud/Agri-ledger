@@ -45,19 +45,25 @@ def create_app(config_class=None):
 
     app.config["SESSION_COOKIE_NAME"] = "agriledger_session"
     app.config["SESSION_COOKIE_HTTPONLY"] = True
-    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_SAMESITE"] = os.environ.get(
+        "SESSION_COOKIE_SAMESITE",
+        getattr(config_class, "SESSION_COOKIE_SAMESITE", "Lax"),
+    )
 
     # Secure cookies enabled in production over HTTPS; False for localhost dev
     app.config["SESSION_COOKIE_SECURE"] = getattr(
         config_class, "SESSION_COOKIE_SECURE", False
     )
+    if app.config["SESSION_COOKIE_SAMESITE"] == "None":
+        app.config["SESSION_COOKIE_SECURE"] = True
 
     # ============================================================
     # CORS CONFIGURATION
     # Reads allowed origins from config/environment with fallback
     # ============================================================
 
-    cors_origins = app.config.get("CORS_ORIGINS") or get_cors_origins()
+    cors_origins = get_cors_origins()
+    app.config["CORS_ORIGINS"] = cors_origins
 
     CORS(
         app,
