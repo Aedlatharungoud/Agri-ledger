@@ -66,7 +66,7 @@ def get_cors_origins() -> list[str]:
     """
     Return allowed CORS origins.
     Reads CORS_ORIGINS from environment (comma- or semicolon-separated).
-    Falls back to development origins if unset.
+    Falls back to production and development origins if unset.
     """
     raw = os.environ.get("CORS_ORIGINS", "").strip()
     if raw:
@@ -75,6 +75,7 @@ def get_cors_origins() -> list[str]:
             return origins
 
     return [
+        "https://agri-ledger-ten.vercel.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:5174",

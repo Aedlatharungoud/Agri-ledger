@@ -127,11 +127,34 @@ class TestProductionSecurityConfiguration(unittest.TestCase):
             self.assertEqual(origins, ["https://agriledger.farm", "https://app.agriledger.farm"])
 
     def test_cors_origins_default_fallback(self):
-        """When CORS_ORIGINS is empty, standard local development ports are returned."""
+        """When CORS_ORIGINS is empty, production Vercel domain and standard local development ports are returned."""
         with patch.dict(os.environ, {"CORS_ORIGINS": ""}):
             origins = get_cors_origins()
+            self.assertIn("https://agri-ledger-ten.vercel.app", origins)
             self.assertIn("http://localhost:5173", origins)
             self.assertIn("http://localhost:5174", origins)
+
+    def test_cors_preflight_for_production_origin(self):
+        """Preflight OPTIONS request from https://agri-ledger-ten.vercel.app to /api/auth/login returns 200 with credentials allowed."""
+        app = create_app()
+        client = app.test_client()
+        response = client.options(
+            "/api/auth/login",
+            headers={
+                "Origin": "https://agri-ledger-ten.vercel.app",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "Content-Type",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers.get("Access-Control-Allow-Origin"),
+            "https://agri-ledger-ten.vercel.app",
+        )
+        self.assertEqual(
+            response.headers.get("Access-Control-Allow-Credentials"),
+            "true",
+        )
 
 
 if __name__ == "__main__":
